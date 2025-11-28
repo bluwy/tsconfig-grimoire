@@ -1,0 +1,8 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist/a-and-b",
+    "noImplicitAny": true
+  },
+  "include": ["a", "b"]
+}

@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist/b"
+  },
+  "include": ["b", "shared"]
+}

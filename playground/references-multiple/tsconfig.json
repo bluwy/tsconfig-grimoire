@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "outDir": "dist/root",
+    "noImplicitAny": true
+  },
+  "include": ["root", "shared"],
+  "references": [
+    { "path": "./tsconfig.a.json" },
+    { "path": "./tsconfig.b.json" }
+  ]
+}

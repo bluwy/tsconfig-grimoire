@@ -1,0 +1,7 @@
+{
+  // Disable implicit tsconfig compiler options if a TS file did not match any tsconfig.
+  // This makes it easier to observe if certain strict checks are enabled in the playground.
+  "js/ts.implicitProjectConfig.strict": false,
+  "js/ts.implicitProjectConfig.strictFunctionTypes": false,
+  "js/ts.implicitProjectConfig.strictNullChecks": false
+}

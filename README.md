@@ -209,3 +209,24 @@ The file works like a normal `tsconfig.json`, except it has a [different `compil
   }
 }
 ```
+
+## JSON schema
+
+The JSON schema for `tsconfig.json` and `jsconfig.json` files are available at the [SchemaStore/schemastore](https://github.com/SchemaStore/schemastore) GitHub repo:
+
+- https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/tsconfig.json
+- https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/jsconfig.json
+
+It's used by VS Code, and is updated by the community, sometimes by the TypeScript maintainers, but may also often be out-of-date. The [TypeScript-Website](https://github.com/microsoft/TypeScript-Website) GitHub repo also contains its own JSON schema generated from `typescript` itself and other hardcoded data, but is also often out-of-date:
+
+- https://github.com/microsoft/TypeScript-Website/blob/v2/packages/tsconfig-reference/scripts/schema/generateJSON.ts
+- https://github.com/microsoft/TypeScript-Website/blob/v2/packages/tsconfig-reference/scripts/schema/result/schema.json
+
+Among this conundrum, the most reliable source of truth is still from [SchemaStore/schemastore](https://github.com/SchemaStore/schemastore).
+
+> [!NOTE]
+> The JSON schema could use some love modernizing to the latest JSON schema spec, deriving automatically from `typescript`'s own documentation (though some are missing), removing outdated fields, and adding missing fields (like [`compilerOptions.explainFiles`](https://www.typescriptlang.org/tsconfig/#explainFiles)).
+>
+> At the moment I've only written some simple scripts to do so [here](https://gist.github.com/bluwy/f776bc97c78cbbddada9390e6172fb30).
+
+<!-- Also here but still private: https://github.com/bluwy/tsconfig-utils/blob/master/scripts/generate-tsconfig/get-tsconfig-schema.ts -->

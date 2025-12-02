@@ -38,11 +38,11 @@ TSConfig has the `files`, `include`, `exclude`, and `references` fields to deter
 
   If `include` is specified, its globbed files will be merged with `files`. If `include` is not specified, only paths in `files` will be used.
 
-- **`include`**: A list of glob patterns to include. If not specified, it defaults to globbing all `.ts` files. If `compilerOptions.checkJs` is `true`, it also globs `.js` files. External tooling may also include `.vue`, `.svelte` files, etc, but it's not standard within TypeScript.
+- **`include`**: A list of file/directory paths and glob patterns to include. Defaults to `["**/*"]` if `files` is unset. When specifying directories or globs that end with `*`, it will glob all `.ts`, `.mts` and `.cts` files by default. If `compilerOptions.checkJs` is `true`, it also globs `.js`, `.mjs` and `cjs` files. External tooling may also include `.vue`, `.svelte` files, etc, but it's not standard within TypeScript.
 
   The glob patterns only support a [small subset of glob features](https://www.typescriptlang.org/tsconfig/#include). TypeScript manually implements the pattern matching and does not use any glob libraries.
 
-- **`exclude`**: A list of glob patterns to exclude from `include`. If not specified, it defaults to excluding `node_modules`, `bower_components`, `jspm_packages`, and the output directory specified in `compilerOptions.outDir` (if set).
+- **`exclude`**: A list of file/directory paths and glob patterns to exclude from `include`. If not specified, it defaults to excluding `node_modules`, `bower_components`, `jspm_packages`, and the output directory specified in `compilerOptions.outDir` (if set).
 
   In contrary to the documentation, `node_modules`, `bower_components`, and `jspm_packages` are always excluded even if they're not specified in `exclude`.
 

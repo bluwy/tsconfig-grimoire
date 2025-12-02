@@ -16,7 +16,7 @@ If a project has multiple `tsconfig.json` files, TypeScript officially handles t
 
    With the TypeScript compiler (the `tsc` CLI), only a single tsconfig is used at a time. It defaults to the `tsconfig.json` in the current working directory, or a different path via the `-p`/`--project` flag.
 
-   Type-checking and compilation is only done on the files [included](#included-files-resolution) in that tsconfig.
+   Type-checking and compilation are only done on the files [included](#included-files-resolution) in that tsconfig.
 
 2. **Nearest matching strategy**: uses nearest matching `tsconfig.json`, e.g. VS Code
 
@@ -112,7 +112,7 @@ While merging two tsconfigs, they follow some specific rules:
 - Objects are merged recursively. For example, `compilerOptions`, `watchOptions`, etc. Except for objects nested in arrays, e.g. `compilerOptions.plugins` items.
 - All other field types are merged via replacing itself entirely, e.g. strings, booleans, arrays, etc. Note that arrays are replaced entirely, not concatenated. For example, `files`, `compilerOptions.outDir`, etc.
 - Fields may be `null`, which is a special ([poorly-documented](https://github.com/microsoft/TypeScript/issues/21443)) value that removes the field from the intermediate merge result, indicating that the default value should be used.
-- The only field that does not ever merge is `references`. The field should only be specified in the rot tsconfig.
+- The only field that does not ever merge is `references`. The field should only be specified in the root tsconfig.
 
 When merging multiple tsconfigs, you may also want to rebase relative paths in certain fields as described in the [Path resolution](#path-resolution) section.
 
@@ -232,7 +232,7 @@ A `jsconfig.json` file works like a normal `tsconfig.json`, except it has a [dif
 
 While the [TSConfig docs](https://www.typescriptlang.org/tsconfig/) and the [Compiler options computed defaults](#compiler-options-computed-defaults) section already explain the default values of each `compilerOptions` field, IDEs like VS Code may also apply a different set of defaults depending on their own settings.
 
-For example, this repo sets [`.vscode/settings.json`](./.vscode/settings.json) that contain settings to modify the default `compilerOptions` if no `tsconfig.json` is found for a file. By default, VS Code has strict checks enabled by default, but the repo's settings file resets the options to their own default (non-strict) to easily test against in the repo's `playground` directory.
+For example, this repo sets [`.vscode/settings.json`](./.vscode/settings.json) that contain settings to modify the default `compilerOptions` if no `tsconfig.json` is found for a file. VS Code has strict checks enabled by default, but the repo's settings file resets the options to their own default (non-strict) to easily test against in the repo's `playground` directory.
 
 This means that if your tool would like to match the behavior users see in their IDE, it can never truly match unless you restrict that a file must match a tsconfig, or you have access to the current IDE settings.
 

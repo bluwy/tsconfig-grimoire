@@ -48,7 +48,7 @@ TSConfig has the `files`, `include`, `exclude`, and `references` fields to deter
 
   The glob patterns also work the same as `include`.
 
-- **`references`**: A list of other tsconfigs that should be part of this (root) tsconfig. When checking if a file is included, the referenced tsconfigs are checked first before the root tsconfig. Each tsconfigs uses the same rules. Project references only go one-level deep, so the referenced tsconfigs' own references are not considered. See the [Project references](#project-references) section for more details.
+- **`references`**: A list of other tsconfigs that should be part of this (root) tsconfig. When checking if a file is included, the referenced tsconfigs are checked first before the root tsconfig. Project references can be nested and should be checked depth-first. Each tsconfigs use the same rules as above. See the [Project references](#project-references) section for more details.
 
 If a file is not explicitly included by `files` or `include`, but is imported by one of the explicitly included files (recursively in the import graph), it is considered implicitly included and matched by the tsconfig. The file would then use that tsconfig for type-checking and compilation as well. An exception being that this does not apply to referenced tsconfigs, where the imported file must also be included explicitly by the referenced tsconfig.
 In practice, this will be difficult and performance-heavy to implement.
@@ -66,7 +66,14 @@ The related tsconfig for a file in this setup also works differently depending o
 
 2. For the **Nearest matching strategy**, the nearest matching `tsconfig.json` is searched upwards from the file's directory as usual, and the referenced tsconfigs are then iterated and checked if they include the file. This also means that only a single referenced tsconfig can apply to the file at a time. If none of the referenced tsconfigs include the file, then it falls back to checking if the root tsconfig includes the file.
 
-Note that the [`references`](https://www.typescriptlang.org/tsconfig/#references) field only work for the root tsconfig. If the referenced tsconfigs have their own `references` field, their `reference` fields are ignored.
+A referenced tsconfig may also have nested `references` that should be checked in a depth-first manner. For example, given the following references:
+
+```
+R -> A, B, C
+B -> D, E
+```
+
+When checking which tsconfig includes the file, the order would be `A -> D -> E -> B -> C -> R`.
 
 If a referenced tsconfig happens to be named as `tsconfig.json`, e.g. it's located in a subdirectory, and the tsconfig includes the file, TypeScript would not continue searching upwards for the root tsconfig, even if the referenced tsconfig has `composite: true` set. In practice this doesn't affect type-checking or compilation results. The only difference is that the tooling wouldn't know of the root tsconfig.
 

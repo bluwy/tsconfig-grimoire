@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "outDir": "dist/b",
+    "noImplicitAny": true
+  },
+  "references": [{ "path": "./tsconfig.c.json" }],
+  "include": ["b", "shared"]
+}

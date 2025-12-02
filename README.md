@@ -2,11 +2,11 @@
 
 A collection of sacred information to deal with `tsconfig.json` for tooling authors and maintainers (that should ideally be documented in the TypeScript docs in the first place).
 
+This README is the grimoire.
+
 For general documentation of tsconfig options, see the [official TSConfig docs](https://www.typescriptlang.org/tsconfig/). This document focuses on the tooling around tsconfigs, e.g. how it's searched, merged, prioritized, special behaviors, and other nuances.
 
 If you have other questions about `tsconfig.json` not answered here, please [open an issue](https://github.com/bluwy/tsconfig-grimoire/issues/new).
-
-> **Updated for TypeScript 5.9**
 
 ## Searching `tsconfig.json`
 
@@ -16,7 +16,7 @@ If a project has multiple `tsconfig.json` files, TypeScript officially handles t
 
    With the TypeScript compiler (the `tsc` CLI), only a single tsconfig is used at a time. It defaults to the `tsconfig.json` in the current working directory, or a different path via the `-p`/`--project` flag.
 
-   Type-checking and compilation is only done on the files included in that tsconfig.
+   Type-checking and compilation is only done on the files [included](#included-files-resolution) in that tsconfig.
 
 2. **Nearest matching strategy**: uses nearest matching `tsconfig.json`, e.g. VS Code
 
@@ -50,7 +50,7 @@ TSConfig has the `files`, `include`, `exclude`, and `references` fields to deter
 
 - **`references`**: A list of other tsconfigs that should be part of this (root) tsconfig. When checking if a file is included, the referenced tsconfigs are checked first before the root tsconfig. Each tsconfigs uses the same rules. Project references only go one-level deep, so the referenced tsconfigs' own references are not considered. See the [Project references](#project-references) section for more details.
 
-If a file is not explicitly included by `files` or `include`, but is imported by one of the explicitly included files (recursively in the import graph), it is considered implicitly included by the tsconfig. The file would then use that tsconfig for type-checking and compilation as well. In practice, this will be difficult and performance-heavy to implement.
+If a file is not explicitly included by `files` or `include`, but is imported by one of the explicitly included files (recursively in the import graph), it is considered implicitly included and matched by the tsconfig. The file would then use that tsconfig for type-checking and compilation as well. In practice, this will be difficult and performance-heavy to implement.
 
 > [!TIP]
 > Use the [TSConfig Helper](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-tsconfig-helper) VS Code extension to easily debug which files are included by a tsconfig.
@@ -65,7 +65,7 @@ The related tsconfig for a file in this setup also works differently depending o
 
 2. For the **Nearest matching strategy**, the nearest matching `tsconfig.json` is searched upwards from the file's directory as usual, and the referenced tsconfigs are then iterated and checked if they include the file. This also means that only a single referenced tsconfig can apply to the file at a time. If none of the referenced tsconfigs include the file, then it falls back to checking if the root tsconfig includes the file.
 
-Note that the [`references`](https://www.typescriptlang.org/tsconfig/#references) field only work for the root tsconfig. If referenced tsconfigs have their own `references` field, the field is ignored.
+Note that the [`references`](https://www.typescriptlang.org/tsconfig/#references) field only work for the root tsconfig. If the referenced tsconfigs have their own `references` field, their `reference` fields are ignored.
 
 If a referenced tsconfig happens to be named as `tsconfig.json`, e.g. it's located in a subdirectory, and the tsconfig includes the file, TypeScript would not continue searching upwards for the root tsconfig, even if the referenced tsconfig has `composite: true` set. In practice this doesn't affect type-checking or compilation results. The only difference is that the tooling wouldn't know of the root tsconfig.
 
@@ -82,7 +82,7 @@ If a referenced tsconfig happens to be named as `tsconfig.json`, e.g. it's locat
 
 ## Extends field
 
-The [`extends`](https://www.typescriptlang.org/tsconfig/#extends) field allows inheriting fields from other tsconfig files. It accepts relative paths or package identifiers (to reference tsconfigs exported by npm packages).
+The [`extends`](https://www.typescriptlang.org/tsconfig/#extends) field allows inheriting fields from other tsconfig files. It accepts relative paths or bare package specifiers (to reference tsconfigs exported by npm packages).
 
 If `extends` is an array, or if the extended tsconfig also has an `extends` field, they're inherited sequentially in a depth-first manner, for example (each alphabet represents a tsconfig file):
 
@@ -91,7 +91,7 @@ R -> A, B, C
 B -> D, E
 ```
 
-If `R` is the root tsconfig, the inheritance order would be `R -> C -> B -> E -> D -> A` (Read as `R` inherits fields from `C`, which inherits from `B`, ...). If this feels reversed, you can also actually reverse the concept here as `A <- D <- E <- B <- C <- R` (Read as `A` fields is overridden by `D`, which is overridden by `E`, ...). Implementation-wise, both work the same.
+If `R` is the root tsconfig, the inheritance order would be `R -> C -> B -> E -> D -> A` (Read as `R` inherits fields from `C`, which inherits from `B`, ...). If this feels reversed, you can reverse the concept as `A <- D <- E <- B <- C <- R` (Read as `A` fields is overridden by `D`, which is overridden by `E`, ...). Implementation-wise, both work the same.
 
 Internally, you may want to represent these tsconfigs as a single merged tsconfig. See the [Merging tsconfigs](#merging-tsconfigs) section for the merge behavior.
 
@@ -106,6 +106,8 @@ While merging two tsconfigs, they follow some specific rules:
 - Fields may be `null`, which is a special ([poorly-documented](https://github.com/microsoft/TypeScript/issues/21443)) value that removes the field from the intermediate merge result, indicating that the default value should be used.
 - The only field that does not ever merge is `references`. The field should only be specified in the rot tsconfig.
 
+When merging multiple tsconfigs, you may also want to rebase relative paths in certain fields as described in the [Path resolution](#path-resolution) section.
+
 ## Path resolution
 
 A tsconfig file have fields that can accept paths:
@@ -119,11 +121,13 @@ A tsconfig file have fields that can accept paths:
 - [`compilerOptions.rootDir`](https://www.typescriptlang.org/tsconfig/#rootDir)
 - [`compilerOptions.typeRoots`](https://www.typescriptlang.org/tsconfig/#typeRoots)
 
-Relative paths in these fields are resolved relative to the tsconfig file's directory, even if it's is extended by a root tsconfig. If it should be resolved relative to the root tsconfig instead, the paths should start with `${configDir}/`.
+Usually, these fields are specified with relative paths. Relative paths in these fields are resolved relative to the tsconfig file's directory, even if it's is extended by a root tsconfig. If it should be resolved relative to the root tsconfig instead, the paths should start with `${configDir}/`. Bare package specifiers (to reference npm packages) do not work here.
+
+Another special field that can accept paths is the [`compilerOptions.paths`](https://www.typescriptlang.org/tsconfig/#paths) field. However, this field resolves its paths differently compared to the other fields above. Particularly, relative paths are resolved relative to the [`compilerOptions.baseUrl`](https://www.typescriptlang.org/tsconfig/#baseUrl) field. See the [official `paths` resolution docs](https://www.typescriptlang.org/docs/handbook/modules/reference.html#paths) for more details.
 
 ## Compiler options computed defaults
 
-The `compilerOptions` have certain fields with defaults computed via other fields. While this is already documented in the [official docs](https://www.typescriptlang.org/tsconfig/), here is summary of all fields that have computed defaults:
+The `compilerOptions` have certain fields with defaults computed via other fields. While this is already documented in the [official docs](https://www.typescriptlang.org/tsconfig/), here is direct list of all fields that have computed defaults:
 
 <!-- prettier-ignore -->
 | Option | Default |
@@ -220,7 +224,7 @@ A `jsconfig.json` file works like a normal `tsconfig.json`, except it has a [dif
 
 While the [TSConfig docs](https://www.typescriptlang.org/tsconfig/) and the [Compiler options computed defaults](#compiler-options-computed-defaults) section already explain the default values of each `compilerOptions` field, IDEs like VS Code may also apply a different set of defaults depending on their own settings.
 
-For example, this repo sets [`.vscode/settings.json`](./.vscode/settings.json) that contain settings to modify the default `compilerOptions` if no `tsconfig.json` is found for a file (The current settings reset the options to their own default to easily test against in the repo's `playground` directory).
+For example, this repo sets [`.vscode/settings.json`](./.vscode/settings.json) that contain settings to modify the default `compilerOptions` if no `tsconfig.json` is found for a file. By default, VS Code has strict checks enabled by default, but the repo's settings file resets the options to their own default (non-strict) to easily test against in the repo's `playground` directory.
 
 This means that if your tool would like to match the behavior users see in their IDE, it can never truly match unless you restrict that a file must match a tsconfig, or you have access to the current IDE settings.
 

@@ -26,7 +26,7 @@ If a project has multiple `tsconfig.json` files, TypeScript officially handles t
 
 So which strategy should you use then? If you're building a `tsc`-like tool that only handles files included by a single tsconfig, use the **Single strategy**. If you're building a tool that works on files one at a time like an IDE, use the **Nearest matching strategy**.
 
-However, implementing the **Nearest matching strategy** is complex and performance-heavy. The [Included files resolution](#included-files-resolution) section explains the details, and the [Default tsconfig in IDEs](#default-tsconfig-in-ides) section also explains why it's difficult to fully match the behavior in IDEs. If you do implement this strategy, you should note the tradeoffs and diverging behaviors.
+However, implementing the **Nearest matching strategy** is complex and performance-heavy. The [Included files resolution](#included-files-resolution) section explains the details, and the [Default tsconfig in IDEs](#default-tsconfig-in-ides) section also explains why it's difficult to fully match the behavior in IDEs. If you decide implement this strategy differently, consider simply using the nearest `tsconfig.json` regardless if matched as it's the usual setup, but also let the users know of the tradeoff and diverging behavior. Alternatively, consider modelling your tool to use the **Single strategy** instead.
 
 If the matched `tsconfig.json` has a `references` field, check out the [Project references](#project-references) section for how to handle that.
 
@@ -50,7 +50,8 @@ TSConfig has the `files`, `include`, `exclude`, and `references` fields to deter
 
 - **`references`**: A list of other tsconfigs that should be part of this (root) tsconfig. When checking if a file is included, the referenced tsconfigs are checked first before the root tsconfig. Each tsconfigs uses the same rules. Project references only go one-level deep, so the referenced tsconfigs' own references are not considered. See the [Project references](#project-references) section for more details.
 
-If a file is not explicitly included by `files` or `include`, but is imported by one of the explicitly included files (recursively in the import graph), it is considered implicitly included and matched by the tsconfig. The file would then use that tsconfig for type-checking and compilation as well. In practice, this will be difficult and performance-heavy to implement.
+If a file is not explicitly included by `files` or `include`, but is imported by one of the explicitly included files (recursively in the import graph), it is considered implicitly included and matched by the tsconfig. The file would then use that tsconfig for type-checking and compilation as well. An exception being that this does not apply to referenced tsconfigs, where the imported file must also be included explicitly by the referenced tsconfig.
+In practice, this will be difficult and performance-heavy to implement.
 
 > [!TIP]
 > Use the [TSConfig Helper](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-tsconfig-helper) VS Code extension to easily debug which files are included by a tsconfig.

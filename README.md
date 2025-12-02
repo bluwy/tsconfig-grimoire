@@ -12,19 +12,21 @@ If you have other questions about `tsconfig.json` not answered here, please [ope
 
 If a project has multiple `tsconfig.json` files, TypeScript officially handles this with two strategies.
 
-1. **Single strategy:** uses a single `tsconfig.json` only, e.g. `tsc -p ./tsconfig.json`
+1. **Single strategy**: uses a single `tsconfig.json` only, e.g. `tsc -p ./tsconfig.json`
 
    With the TypeScript compiler (the `tsc` CLI), only a single tsconfig is used at a time. It defaults to the `tsconfig.json` in the current working directory, or a different path via the `-p`/`--project` flag.
 
    Type-checking and compilation is only done on the files included in that tsconfig.
 
-2. **Nearest matching strategy:** uses nearest matching `tsconfig.json`, e.g. VS Code
+2. **Nearest matching strategy**: uses nearest matching `tsconfig.json`, e.g. VS Code
 
    The TypeScript language server uses a different strategy as files are opened one at a time. The nearest matching `tsconfig.json` searched upwards from the file's directory is used as the config for that file. A matched tsconfig is one that [includes](#included-files-resolution) the file.
 
    This works similarly enough to strategy no1 that there's no difference in practice, however edge cases can happen if, e.g. multiple tsconfigs include the same file, or a tsconfig includes files outside its own directory.
 
-So which strategy should you use then? In many cases, you should use strategy no2, unless you're building a tool that only handles a set of files included by a tsconfig, similar to how `tsc` works.
+So which strategy should you use then? If you're building a `tsc`-like tool that only handles files included by a single tsconfig, use the **Single strategy**. If you're building a tool that works on files one at a time like an IDE, use the **Nearest matching strategy**.
+
+However, implementing the **Nearest matching strategy** is complex and performance-heavy. The [Included files resolution](#included-files-resolution) section explains the details, and the [Default tsconfig in IDEs](#default-tsconfig-in-ides) section also explains why it's difficult to fully match the behavior in IDEs. If you do implement this strategy, you should note the tradeoffs and diverging behaviors.
 
 If the matched `tsconfig.json` has a `references` field, check out the [Project references](#project-references) section for how to handle that.
 
@@ -42,11 +44,13 @@ TSConfig has the `files`, `include`, `exclude`, and `references` fields to deter
 
 - **`exclude`**: A list of glob patterns to exclude from `include`. If not specified, it defaults to excluding `node_modules`, `bower_components`, `jspm_packages`, and the output directory specified in `compilerOptions.outDir` (if set).
 
-  In contrary to the documentation, `node_modules`, `bower_components`, and `jspm_packages` are always excluded regardless if they're specified in `exclude` or not.
+  In contrary to the documentation, `node_modules`, `bower_components`, and `jspm_packages` are always excluded even if they're not specified in `exclude`.
 
   The glob patterns also work the same as `include`.
 
-- **`references`**: A list of other tsconfigs that should be part of this (root) tsconfig. If a file is not included in the root tsconfig, it should also be checked if it's included in any of the referenced tsconfigs (using the same rules above). Project references only go one-level deep, so the referenced tsconfigs' own references are not considered. See the [Project references](#project-references) section for more details.
+- **`references`**: A list of other tsconfigs that should be part of this (root) tsconfig. When checking if a file is included, the referenced tsconfigs are checked first before the root tsconfig. Each tsconfigs uses the same rules. Project references only go one-level deep, so the referenced tsconfigs' own references are not considered. See the [Project references](#project-references) section for more details.
+
+If a file is not explicitly included by `files` or `include`, but is imported by one of the explicitly included files (recursively in the import graph), it is considered implicitly included by the tsconfig. The file would then use that tsconfig for type-checking and compilation as well. In practice, this will be difficult and performance-heavy to implement.
 
 > [!TIP]
 > Use the [TSConfig Helper](https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.vscode-tsconfig-helper) VS Code extension to easily debug which files are included by a tsconfig.
@@ -217,6 +221,8 @@ A `jsconfig.json` file works like a normal `tsconfig.json`, except it has a [dif
 While the [TSConfig docs](https://www.typescriptlang.org/tsconfig/) and the [Compiler options computed defaults](#compiler-options-computed-defaults) section already explain the default values of each `compilerOptions` field, IDEs like VS Code may also apply a different set of defaults depending on their own settings.
 
 For example, this repo sets [`.vscode/settings.json`](./.vscode/settings.json) that contain settings to modify the default `compilerOptions` if no `tsconfig.json` is found for a file (The current settings reset the options to their own default to easily test against in the repo's `playground` directory).
+
+This means that if your tool would like to match the behavior users see in their IDE, it can never truly match unless you restrict that a file must match a tsconfig, or you have access to the current IDE settings.
 
 ## JSON schema
 

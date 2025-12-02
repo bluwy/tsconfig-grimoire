@@ -40,7 +40,7 @@ TSConfig has the `files`, `include`, `exclude`, and `references` fields to deter
 
 - **`include`**: A list of file/directory paths and glob patterns to include. Defaults to `["**/*"]` if `files` is unset. When specifying directories or globs that end with `*`, it will glob all `.ts`, `.mts` and `.cts` files by default. If `compilerOptions.checkJs` is `true`, it also globs `.js`, `.mjs` and `cjs` files. External tooling may also include `.vue`, `.svelte` files, etc, but it's not standard within TypeScript.
 
-  The glob patterns only support a [small subset of glob features](https://www.typescriptlang.org/tsconfig/#include). TypeScript manually implements the pattern matching and does not use any glob libraries.
+  The glob patterns only support a [small subset of glob features](https://www.typescriptlang.org/tsconfig/#include). TypeScript manually implements the pattern matching and does not use any glob libraries. Also note that `**` and `*` glob patterns do not glob into directories and files that start with `.` respectively. To explicitly include them, you can specify like `src/.dot/*` or `src/.dot.ts`.
 
 - **`exclude`**: A list of file/directory paths and glob patterns to exclude from `include`. If not specified, it defaults to excluding `node_modules`, `bower_components`, `jspm_packages`, and the output directory specified in `compilerOptions.outDir` (if set).
 

@@ -2,5 +2,6 @@
   "compilerOptions": {
     "checkJs": true,
     "noEmit": true
-  }
+  },
+  "include": ["**/*", "src/.explicit-dot/*", "src/.explicit-dot.ts"]
 }

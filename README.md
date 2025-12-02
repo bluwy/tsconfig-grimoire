@@ -196,7 +196,9 @@ The `compilerOptions` have certain fields with defaults computed via other field
 
 `jsconfig.json` is a semi-standard TypeScript config supported by IDEs (or specifically the TypeScript language server). Unless you're building an IDE or language server plugin, you shouldn't need to account for this file.
 
-The file works like a normal `tsconfig.json`, except it has a [different `compilerOptions` default](https://github.com/microsoft/TypeScript/blob/669c25c091ad4d32298d0f33b0e4e681d46de3ea/src/compiler/commandLineParser.ts#L3722-L3727):
+If you do want to match the language server behavior, note that the `jsconfig.json` file also take part in the **nearest matching strategy** as described in [Searching `tsconfig.json`](#searching-tsconfigjson), which means if a `jsconfig.json` is found to be nearer and matching, it would be used instead. However if both `tsconfig.json` and `jsconfig.json` are found in the same directory, `tsconfig.json` takes precedence.
+
+A `jsconfig.json` file works like a normal `tsconfig.json`, except it has a [different `compilerOptions` default](https://github.com/microsoft/TypeScript/blob/669c25c091ad4d32298d0f33b0e4e681d46de3ea/src/compiler/commandLineParser.ts#L3722-L3727):
 
 ```json
 {
@@ -210,14 +212,20 @@ The file works like a normal `tsconfig.json`, except it has a [different `compil
 }
 ```
 
+## Default tsconfig in IDEs
+
+While the [TSConfig docs](https://www.typescriptlang.org/tsconfig/) and the [Compiler options computed defaults](#compiler-options-computed-defaults) section already explain the default values of each `compilerOptions` field, IDEs like VS Code may also apply a different set of defaults depending on their own settings.
+
+For example, this repo sets [`.vscode/settings.json`](./.vscode/settings.json) that contain settings to modify the default `compilerOptions` if no `tsconfig.json` is found for a file (The current settings reset the options to their own default to easily test against in the repo's `playground` directory).
+
 ## JSON schema
 
-The JSON schema for `tsconfig.json` and `jsconfig.json` files are available at the [SchemaStore/schemastore](https://github.com/SchemaStore/schemastore) GitHub repo:
+The JSON schema for `tsconfig.json` and `jsconfig.json` files are available at the [SchemaStore/schemastore](https://github.com/SchemaStore/schemastore) repo:
 
 - https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/tsconfig.json
 - https://github.com/SchemaStore/schemastore/blob/master/src/schemas/json/jsconfig.json
 
-It's used by VS Code, and is updated by the community, sometimes by the TypeScript maintainers, but may also often be out-of-date. The [TypeScript-Website](https://github.com/microsoft/TypeScript-Website) GitHub repo also contains its own JSON schema generated from `typescript` itself and other hardcoded data, but is also often out-of-date:
+It's used by VS Code, and is updated by the community, sometimes by the TypeScript maintainers, but may also often be out-of-date. The [TypeScript-Website](https://github.com/microsoft/TypeScript-Website) repo also contains its own JSON schema generated from `typescript` itself and other hardcoded data, but is also often out-of-date:
 
 - https://github.com/microsoft/TypeScript-Website/blob/v2/packages/tsconfig-reference/scripts/schema/generateJSON.ts
 - https://github.com/microsoft/TypeScript-Website/blob/v2/packages/tsconfig-reference/scripts/schema/result/schema.json

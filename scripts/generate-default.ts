@@ -19,14 +19,14 @@ async function main() {
       ? defaultValue.join(' ')
       : defaultValue
     defaultStr = defaultStr.replace(/\[`(\w+?)`\]\(#[\w-]+?\)/g, (_, $1) =>
-      linkify($1)
+      linkify($1),
     )
     table += `| ${linkify(option)} | ${defaultStr} |\n`
   }
 
   // Pad option column
   const maxSecondPipeIndex = Math.max(
-    ...table.split('\n').map((line) => line.indexOf('|', 2))
+    ...table.split('\n').map((line) => line.indexOf('|', 2)),
   )
   table = table
     .split('\n')

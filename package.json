@@ -4,9 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "generate-default": "node scripts/generate-default.ts"
+    "generate-default": "node scripts/generate-default.ts",
+    "format": "prettier --write \"**/*.{js,ts,md,json}\""
   },
   "devDependencies": {
+    "prettier": "^3.7.3",
     "typescript": "^5.9.3"
   }
 }

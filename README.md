@@ -53,13 +53,15 @@ TSConfig has the `files`, `include`, `exclude`, and `references` fields to deter
 
 ## Project references
 
-Project references allow composing multiple tsconfigs into a single build. See the [official docs](https://www.typescriptlang.org/docs/handbook/project-references.html) for its general use case and behavior.
+The [`references`](https://www.typescriptlang.org/tsconfig/#references) field allow composing multiple tsconfigs into a single build. See the [official docs](https://www.typescriptlang.org/docs/handbook/project-references.html) for its general use case and behavior.
 
 The related tsconfig for a file in this setup also works differently depending on the search strategy as discussed in [Searching `tsconfig.json`](#searching-tsconfigjson).
 
 1. For the **Single strategy**, each referenced tsconfigs are iterated first for their included files and runs type-checking and compilation in order. If multiple referenced tsconfigs include the same file, then the file would run twice. After that, if the root tsconfig includes any files not included by the referenced tsconfigs, those files would be type-checked and compiled last.
 
 2. For the **Nearest matching strategy**, the nearest matching `tsconfig.json` is searched upwards from the file's directory as usual, and the referenced tsconfigs are then iterated and checked if they include the file. This also means that only a single referenced tsconfig can apply to the file at a time. If none of the referenced tsconfigs include the file, then it falls back to checking if the root tsconfig includes the file.
+
+Note that the [`references`](https://www.typescriptlang.org/tsconfig/#references) field only work for the root tsconfig. If referenced tsconfigs have their own `references` field, the field is ignored.
 
 If a referenced tsconfig happens to be named as `tsconfig.json`, e.g. it's located in a subdirectory, and the tsconfig includes the file, TypeScript would not continue searching upwards for the root tsconfig, even if the referenced tsconfig has `composite: true` set. In practice this doesn't affect type-checking or compilation results. The only difference is that the tooling wouldn't know of the root tsconfig.
 
@@ -73,6 +75,32 @@ If a referenced tsconfig happens to be named as `tsconfig.json`, e.g. it's locat
 > Which you may have noticed is exactly the same behavior in normal project references today. Previously, the root `tsconfig.json` needed to also include the files included by the referenced tsconfigs to work, but is no longer the case. So in practice, you shouldn't need to handle solutions specifically. Normal project references handling will also indirectly handle solutions.
 >
 > Also interestingly with solutions, the referenced tsconfigs do not need to have `composite: true` set. However, it's probably still a good idea to set it for correctness and future-proofing.
+
+## Extends field
+
+The [`extends`](https://www.typescriptlang.org/tsconfig/#extends) field allows inheriting fields from other tsconfig files. It accepts relative paths or package identifiers (to reference tsconfigs exported by npm packages).
+
+If `extends` is an array, or if the extended tsconfig also has an `extends` field, they're inherited sequentially in a depth-first manner, for example (each alphabet represents a tsconfig file):
+
+```
+R -> A, B, C
+B -> D, E
+```
+
+If `R` is the root tsconfig, the inheritance order would be `R -> C -> B -> E -> D -> A` (Read as `R` inherits fields from `C`, which inherits from `B`, ...). If this feels reversed, you can also actually reverse the concept here as `A <- D <- E <- B <- C <- R` (Read as `A` fields is overridden by `D`, which is overridden by `E`, ...). Implementation-wise, both work the same.
+
+Internally, you may want to represent these tsconfigs as a single merged tsconfig. See the [Merging tsconfigs](#merging-tsconfigs) section for the merge behavior.
+
+## Merging tsconfigs
+
+When merging tsconfigs, you can do so in either direction as described in the [Extends field](#extends-field) section. Inheritance-style or override-style.
+
+While merging two tsconfigs, they follow some specific rules:
+
+- Objects are merged recursively. For example, `compilerOptions`, `watchOptions`, etc. Except for objects nested in arrays, e.g. `compilerOptions.plugins` items.
+- All other field types are merged via replacing itself entirely, e.g. strings, booleans, arrays, etc. Note that arrays are replaced entirely, not concatenated. For example, `files`, `compilerOptions.outDir`, etc.
+- Fields may be `null`, which is a special ([poorly-documented](https://github.com/microsoft/TypeScript/issues/21443)) value that removes the field from the intermediate merge result, indicating that the default value should be used.
+- The only field that does not ever merge is `references`. The field should only be specified in the rot tsconfig.
 
 ## Path resolution
 

@@ -76,9 +76,93 @@ If a referenced tsconfig happens to be named as `tsconfig.json`, e.g. it's locat
 
 ## Path resolution
 
-## Compiler options default
+A tsconfig file have fields that can accept paths:
 
-Certain fields
+- [`files`](https://www.typescriptlang.org/tsconfig/#files)
+- [`include`](https://www.typescriptlang.org/tsconfig/#include)
+- [`exclude`](https://www.typescriptlang.org/tsconfig/#exclude)
+- [`compilerOptions.declarationDir`](https://www.typescriptlang.org/tsconfig/#declarationDir)
+- [`compilerOptions.tsBuildInfoFile`](https://www.typescriptlang.org/tsconfig/#tsBuildInfoFile)
+- [`compilerOptions.outDir`](https://www.typescriptlang.org/tsconfig/#outDir)
+- [`compilerOptions.rootDir`](https://www.typescriptlang.org/tsconfig/#rootDir)
+- [`compilerOptions.typeRoots`](https://www.typescriptlang.org/tsconfig/#typeRoots)
+
+Relative paths in these fields are resolved relative to the tsconfig file's directory, even if it's is extended by a root tsconfig. If it should be resolved relative to the root tsconfig instead, the paths should start with `${configDir}/`.
+
+## Compiler options computed defaults
+
+The `compilerOptions` have certain fields with defaults computed via other fields. While this is already documented in the [official docs](https://www.typescriptlang.org/tsconfig/), here is summary of all fields that have computed defaults:
+
+<!-- prettier-ignore -->
+| Option | Default |
+| - | - |
+| [`allowSyntheticDefaultImports`](d3)  | `true` if [`esModuleInterop`](d0) is enabled, [`module`](d1) is `system`, or [`moduleResolution`](d2) is `bundler`; `false` otherwise. |
+| [`alwaysStrict`](d5)                  | `true` if [`strict`](d4); `false` otherwise. |
+| [`declaration`](d7)                   | `true` if [`composite`](d6); `false` otherwise. |
+| [`esModuleInterop`](d0)               | `true` if [`module`](d1) is `node16`, `nodenext`, or `preserve`; `false` otherwise. |
+| [`exclude`](d9)                       | node_modules bower_components jspm_packages [`outDir`](d8) |
+| [`include`](d11)                      | `[]` if [`files`](d10) is specified; `**/*` otherwise. |
+| [`incremental`](d12)                  | `true` if [`composite`](d6); `false` otherwise. |
+| [`isolatedModules`](d14)              | `true` if [`verbatimModuleSyntax`](d13); `false` otherwise. |
+| [`jsxFactory`](d15)                   | React.createElement |
+| [`locale`](d16)                       | Platform specific. |
+| [`module`](d1)                        | `CommonJS` if [`target`](d17) is `ES5`; `ES6`/`ES2015` otherwise. |
+| [`moduleResolution`](d2)              | `Node10` if [`module`](d1) is `CommonJS`; `Node16` if [`module`](d1) is `Node16`, `Node18`, or `Node20`; `NodeNext` if [`module`](d1) is `NodeNext`; `Bundler` if [`module`](d1) is `Preserve`; `Classic` otherwise. |
+| [`newLine`](d18)                      | `lf` |
+| [`noImplicitAny`](d19)                | `true` if [`strict`](d4); `false` otherwise. |
+| [`noImplicitThis`](d20)               | `true` if [`strict`](d4); `false` otherwise. |
+| [`preserveConstEnums`](d21)           | `true` if [`isolatedModules`](d14); `false` otherwise. |
+| [`reactNamespace`](d22)               | React |
+| [`resolvePackageJsonExports`](d23)    | `true` when [`moduleResolution`](d2) is `node16`, `nodenext`, or `bundler`; otherwise `false` |
+| [`resolvePackageJsonImports`](d24)    | `true` when [`moduleResolution`](d2) is `node16`, `nodenext`, or `bundler`; otherwise `false` |
+| [`rootDir`](d25)                      | Computed from the list of input files. |
+| [`rootDirs`](d26)                     | Computed from the list of input files. |
+| [`strictBindCallApply`](d27)          | `true` if [`strict`](d4); `false` otherwise. |
+| [`strictBuiltinIteratorReturn`](d28)  | `true` if [`strict`](d4); `false` otherwise. |
+| [`strictFunctionTypes`](d29)          | `true` if [`strict`](d4); `false` otherwise. |
+| [`useUnknownInCatchVariables`](d30)   | `true` if [`strict`](d4); `false` otherwise. |
+| [`strictPropertyInitialization`](d31) | `true` if [`strict`](d4); `false` otherwise. |
+| [`strictNullChecks`](d32)             | `true` if [`strict`](d4); `false` otherwise. |
+| [`target`](d17)                       | `es2023` if [`module`](d1) is `node20`; `esnext` if [`module`](d1) is `nodenext`; `ES5` otherwise. |
+| [`useDefineForClassFields`](d33)      | `true` if [`target`](d17) is `ES2022` or higher, including `ESNext`; `false` otherwise. |
+| [`allowImportingTsExtensions`](d35)   | `true` if [`rewriteRelativeImportExtensions`](d34); `false` otherwise. |
+
+[d0]: https://www.typescriptlang.org/tsconfig/#esModuleInterop
+[d1]: https://www.typescriptlang.org/tsconfig/#module
+[d2]: https://www.typescriptlang.org/tsconfig/#moduleResolution
+[d3]: https://www.typescriptlang.org/tsconfig/#allowSyntheticDefaultImports
+[d4]: https://www.typescriptlang.org/tsconfig/#strict
+[d5]: https://www.typescriptlang.org/tsconfig/#alwaysStrict
+[d6]: https://www.typescriptlang.org/tsconfig/#composite
+[d7]: https://www.typescriptlang.org/tsconfig/#declaration
+[d8]: https://www.typescriptlang.org/tsconfig/#outDir
+[d9]: https://www.typescriptlang.org/tsconfig/#exclude
+[d10]: https://www.typescriptlang.org/tsconfig/#files
+[d11]: https://www.typescriptlang.org/tsconfig/#include
+[d12]: https://www.typescriptlang.org/tsconfig/#incremental
+[d13]: https://www.typescriptlang.org/tsconfig/#verbatimModuleSyntax
+[d14]: https://www.typescriptlang.org/tsconfig/#isolatedModules
+[d15]: https://www.typescriptlang.org/tsconfig/#jsxFactory
+[d16]: https://www.typescriptlang.org/tsconfig/#locale
+[d17]: https://www.typescriptlang.org/tsconfig/#target
+[d18]: https://www.typescriptlang.org/tsconfig/#newLine
+[d19]: https://www.typescriptlang.org/tsconfig/#noImplicitAny
+[d20]: https://www.typescriptlang.org/tsconfig/#noImplicitThis
+[d21]: https://www.typescriptlang.org/tsconfig/#preserveConstEnums
+[d22]: https://www.typescriptlang.org/tsconfig/#reactNamespace
+[d23]: https://www.typescriptlang.org/tsconfig/#resolvePackageJsonExports
+[d24]: https://www.typescriptlang.org/tsconfig/#resolvePackageJsonImports
+[d25]: https://www.typescriptlang.org/tsconfig/#rootDir
+[d26]: https://www.typescriptlang.org/tsconfig/#rootDirs
+[d27]: https://www.typescriptlang.org/tsconfig/#strictBindCallApply
+[d28]: https://www.typescriptlang.org/tsconfig/#strictBuiltinIteratorReturn
+[d29]: https://www.typescriptlang.org/tsconfig/#strictFunctionTypes
+[d30]: https://www.typescriptlang.org/tsconfig/#useUnknownInCatchVariables
+[d31]: https://www.typescriptlang.org/tsconfig/#strictPropertyInitialization
+[d32]: https://www.typescriptlang.org/tsconfig/#strictNullChecks
+[d33]: https://www.typescriptlang.org/tsconfig/#useDefineForClassFields
+[d34]: https://www.typescriptlang.org/tsconfig/#rewriteRelativeImportExtensions
+[d35]: https://www.typescriptlang.org/tsconfig/#allowImportingTsExtensions
 
 ## `jsconfig.json`
 

@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "scripts": {
+    "generate-default": "node scripts/generate-default.ts"
+  },
   "devDependencies": {
     "typescript": "^5.9.3"
   }

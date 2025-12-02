@@ -78,7 +78,7 @@ When checking which tsconfig includes the file, the order would be `A -> D -> E 
 If a referenced tsconfig happens to be named as `tsconfig.json`, e.g. it's located in a subdirectory, and the tsconfig includes the file, TypeScript would not continue searching upwards for the root tsconfig, even if the referenced tsconfig has `composite: true` set. In practice this doesn't affect type-checking or compilation results. The only difference is that the tooling wouldn't know of the root tsconfig.
 
 > [!NOTE]
-> Project references may sometimes also be referred to as "solutions" or "solution-style tsconfigs", which are simply root tsconfigs with `"files": []` set, which means in practice its purpose is to only group the referenced tsconfigs together and does not run type-checking or compilation on its own files. Today, that is the only significant meaning for "solutions".
+> Project references may sometimes also be referred to as "solutions" or "solution-style tsconfigs", which are simply root tsconfigs that do not include any files, which means in practice its purpose is to only group the referenced tsconfigs together and does not run type-checking or compilation on its own files. Today, that is the only significant meaning for "solutions".
 >
 > However, when solutions were first introduced (or coined in TypeScript) in [TypeScript 3.9](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-9.html#support-for-solution-style-tsconfigjson-files), its [original PR](https://github.com/microsoft/TypeScript/pull/37239) notes that:
 >
